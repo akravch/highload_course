@@ -13,6 +13,8 @@ services:
     ports:
       - "5001:5432"
     environment:
+      - POSTGRES_DB=highload_course
       - POSTGRES_PASSWORD=pass@w0rd
     volumes:
       - ~/postgresql:/var/lib/postgresql
+      - ./../Scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
