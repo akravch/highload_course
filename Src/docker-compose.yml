@@ -1,6 +1,6 @@
 services:
   api:
-    build: .
+    build: ./HighloadCourse
     container_name: highload_course_api
     restart: always
     ports:
