@@ -1,4 +1,5 @@
 ﻿using HighloadCourse.Models;
+using HighloadCourse.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HighloadCourse.Controllers;
@@ -6,6 +7,13 @@ namespace HighloadCourse.Controllers;
 [ApiController]
 public sealed class UserController : ControllerBase
 {
+    private readonly UserService _userService;
+
+    public UserController(UserService userService)
+    {
+        _userService = userService;
+    }
+
     [HttpPost("/login")]
     [ProducesResponseType(typeof(UserLoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -14,7 +22,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<UserLoginResponse> LoginAsync([FromBody] UserLoginRequest request)
     {
-        return new UserLoginResponse { Token = "token" };
+        return await _userService.LoginAsync(request);
     }
 
     [HttpPost("/user/register")]
@@ -24,7 +32,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<UserRegisterResponse> RegisterAsync([FromBody] UserRegisterRequest request)
     {
-        return new UserRegisterResponse { UserId = "id" };
+        return await _userService.RegisterAsync(request);
     }
 
     [HttpGet("/user/get/{id}")]
@@ -35,14 +43,6 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<UserGetResponse> GetAsync([FromRoute] string id)
     {
-        return new UserGetResponse
-        {
-            Id = "id",
-            FirstName = "first",
-            SecondName = "second",
-            Biography = "bio",
-            City = "city",
-            Birthdate = DateTimeOffset.Now
-        };
+        return await _userService.GetAsync(id);
     }
 }
