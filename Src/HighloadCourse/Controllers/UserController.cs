@@ -41,8 +41,11 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<UserGetResponse> GetAsync([FromRoute] string id)
+    public async Task<ActionResult<UserGetResponse>> GetAsync([FromRoute] string id)
     {
-        return await _userService.GetAsync(id);
+        var response = await _userService.GetAsync(id);
+        return response != null
+            ? Ok(response)
+            : NotFound();
     }
 }
