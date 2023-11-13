@@ -1,19 +1,26 @@
-﻿using System.Security.Cryptography;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using HighloadCourse.Models;
 using HighloadCourse.Utils;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using NpgsqlTypes;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace HighloadCourse.Services;
 
 public sealed class UserService : IDisposable
 {
     private readonly NpgsqlDataSource _dataSource;
+    private readonly byte[] _authenticationKey;
 
     public UserService(IConfiguration configuration)
     {
         _dataSource = NpgsqlDataSource.Create(configuration["ConnectionString"]!);
+        _authenticationKey = Encoding.UTF8.GetBytes(configuration["AuthenticationKey"]!);
     }
 
     public void Dispose()
@@ -40,12 +47,23 @@ public sealed class UserService : IDisposable
         var salt = Convert.FromHexString(reader.GetString(1));
         var hash = KeyDerivation.Pbkdf2(request.Password, salt, KeyDerivationPrf.HMACSHA256, 100_000, 64);
 
-        if (CryptographicOperations.FixedTimeEquals(hash, storedHash))
+        if (!CryptographicOperations.FixedTimeEquals(hash, storedHash))
         {
-            return new UserLoginResponse { Token = "token" };
+            return null;
         }
 
-        return null;
+        var key = new SymmetricSecurityKey(_authenticationKey);
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[] { new Claim(JwtRegisteredClaimNames.Sub, request.Id) }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
+        };
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(descriptor);
+
+        return new UserLoginResponse { Token = tokenHandler.WriteToken(token) };
+
     }
 
     public async Task<UserRegisterResponse> RegisterAsync(UserRegisterRequest request)
