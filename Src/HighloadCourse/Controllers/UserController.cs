@@ -20,9 +20,12 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<UserLoginResponse> LoginAsync([FromBody] UserLoginRequest request)
+    public async Task<ActionResult<UserLoginResponse>> LoginAsync([FromBody] UserLoginRequest request)
     {
-        return await _userService.LoginAsync(request);
+        var response = await _userService.LoginAsync(request);
+        return response == null
+            ? NotFound()
+            : Ok(response);
     }
 
     [HttpPost("/user/register")]

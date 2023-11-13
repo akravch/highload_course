@@ -21,10 +21,31 @@ public sealed class UserService : IDisposable
         _dataSource.Dispose();
     }
 
-    public async Task<UserLoginResponse> LoginAsync(UserLoginRequest request)
+    public async Task<UserLoginResponse?> LoginAsync(UserLoginRequest request)
     {
-        return new UserLoginResponse { Token = "token" };
+        const string sql = "SELECT hash, salt FROM account WHERE id = $1";
 
+        await using var command = _dataSource.CreateCommand(sql);
+
+        command.Parameters.AddPositional(long.Parse(request.Id), NpgsqlDbType.Bigint);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        var storedHash = Convert.FromHexString(reader.GetString(0));
+        var salt = Convert.FromHexString(reader.GetString(1));
+        var hash = KeyDerivation.Pbkdf2(request.Password, salt, KeyDerivationPrf.HMACSHA256, 100_000, 64);
+
+        if (CryptographicOperations.FixedTimeEquals(hash, storedHash))
+        {
+            return new UserLoginResponse { Token = "token" };
+        }
+
+        return null;
     }
 
     public async Task<UserRegisterResponse> RegisterAsync(UserRegisterRequest request)
