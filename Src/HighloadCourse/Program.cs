@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HighloadCourse.ErrorHandling;
 using HighloadCourse.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ builder.Services
     .ConfigureApiBehaviorOptions(options => options.SuppressMapClientErrors = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddScoped<UserService>();
 
@@ -20,6 +22,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler(_ => { });
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
