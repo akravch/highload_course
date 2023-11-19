@@ -1,4 +1,5 @@
-﻿using HighloadCourse.Models;
+﻿using HighloadCourse.ErrorHandling;
+using HighloadCourse.Models;
 using HighloadCourse.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserLoginResponse>> LoginAsync([FromBody] UserLoginRequest request)
     {
         var response = await _userService.LoginAsync(request);
@@ -33,7 +35,8 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<UserRegisterResponse> RegisterAsync([FromBody] UserRegisterRequest request)
+    [ServiceFilter<GlobalModelValidationFilter>]
+    public async Task<ActionResult<UserRegisterResponse>> RegisterAsync([FromBody] UserRegisterRequest request)
     {
         return await _userService.RegisterAsync(request);
     }
@@ -44,6 +47,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserGetResponse>> GetAsync([FromRoute] string id)
     {
         var response = await _userService.GetAsync(id);
