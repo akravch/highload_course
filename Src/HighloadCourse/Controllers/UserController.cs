@@ -24,10 +24,17 @@ public sealed class UserController : ControllerBase
     [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserLoginResponse>> LoginAsync([FromBody] UserLoginRequest request)
     {
-        var response = await _userService.LoginAsync(request);
-        return response == null
-            ? NotFound()
-            : Ok(response);
+        var result = await _userService.LoginAsync(request);
+
+        switch (result.Error)
+        {
+            case UserLoginError.UserNotFound:
+                return NotFound();
+            case UserLoginError.InvalidPassword:
+                return BadRequest();
+            default:
+                return Ok(new UserLoginResponse { Token = result.Token! });
+        }
     }
 
     [HttpPost("/user/register")]
@@ -38,7 +45,9 @@ public sealed class UserController : ControllerBase
     [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserRegisterResponse>> RegisterAsync([FromBody] UserRegisterRequest request)
     {
-        return await _userService.RegisterAsync(request);
+        var userId = await _userService.RegisterAsync(request);
+
+        return Ok(new UserRegisterResponse { UserId = userId });
     }
 
     [HttpGet("/user/get/{id}")]
@@ -50,9 +59,18 @@ public sealed class UserController : ControllerBase
     [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserGetResponse>> GetAsync([FromRoute] string id)
     {
-        var response = await _userService.GetAsync(id);
-        return response != null
-            ? Ok(response)
+        var result = await _userService.GetAsync(id);
+
+        return result != null
+            ? Ok(new UserGetResponse
+            {
+                Id = result.Id,
+                FirstName = result.FirstName,
+                SecondName = result.SecondName,
+                Biography = result.Biography,
+                City = result.City,
+                Birthdate = result.Birthdate
+            })
             : NotFound();
     }
 }

@@ -28,7 +28,10 @@ public sealed class UserService : IDisposable
         _dataSource.Dispose();
     }
 
-    public async Task<UserLoginResponse?> LoginAsync(UserLoginRequest request)
+    // success
+    // not found
+    // invalid password
+    public async Task<UserLoginResult> LoginAsync(UserLoginRequest request)
     {
         const string sql = "SELECT hash, salt FROM account WHERE id = $1";
 
@@ -40,7 +43,7 @@ public sealed class UserService : IDisposable
 
         if (!await reader.ReadAsync())
         {
-            return null;
+            return UserLoginResult.NotFound;
         }
 
         var storedHash = Convert.FromHexString(reader.GetString(0));
@@ -49,7 +52,7 @@ public sealed class UserService : IDisposable
 
         if (!CryptographicOperations.FixedTimeEquals(hash, storedHash))
         {
-            return null;
+            return UserLoginResult.InvalidPassword;
         }
 
         var key = new SymmetricSecurityKey(_authenticationKey);
@@ -62,11 +65,10 @@ public sealed class UserService : IDisposable
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(descriptor);
 
-        return new UserLoginResponse { Token = tokenHandler.WriteToken(token) };
-
+        return UserLoginResult.Success(tokenHandler.WriteToken(token));
     }
 
-    public async Task<UserRegisterResponse> RegisterAsync(UserRegisterRequest request)
+    public async Task<string> RegisterAsync(UserRegisterRequest request)
     {
         const string sql =
             """
@@ -96,10 +98,10 @@ public sealed class UserService : IDisposable
 
         var userId = (long) (await command.ExecuteScalarAsync())!;
 
-        return new UserRegisterResponse { UserId = userId.ToString() };
+        return userId.ToString();
     }
 
-    public async Task<UserGetResponse?> GetAsync(string id)
+    public async Task<UserGetResult?> GetAsync(string id)
     {
         const string sql = "SELECT first_name, second_name, biography, city, birthdate FROM account_info WHERE account_id = ($1) LIMIT 1";
         await using var command = _dataSource.CreateCommand(sql);
@@ -113,14 +115,12 @@ public sealed class UserService : IDisposable
             return null;
         }
 
-        return new UserGetResponse
-        {
-            Id = id,
-            FirstName = reader.GetString(0),
-            SecondName = reader.GetString(1),
-            Biography = reader.GetString(2),
-            City = reader.GetString(3),
-            Birthdate = reader.GetFieldValue<DateOnly>(4)
-        };
+        return new UserGetResult(
+            id,
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.GetFieldValue<DateOnly>(4));
     }
 }
