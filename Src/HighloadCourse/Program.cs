@@ -28,7 +28,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler(_ => { });
-app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
