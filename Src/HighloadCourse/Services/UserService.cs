@@ -37,7 +37,12 @@ public sealed class UserService : IDisposable
 
         await using var command = _dataSource.CreateCommand(sql);
 
-        command.Parameters.AddPositional(long.Parse(request.Id), NpgsqlDbType.Bigint);
+        if (!long.TryParse(request.Id, out var userId))
+        {
+            return UserLoginResult.NotFound;
+        }
+
+        command.Parameters.AddPositional(userId, NpgsqlDbType.Bigint);
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -106,7 +111,12 @@ public sealed class UserService : IDisposable
         const string sql = "SELECT first_name, second_name, biography, city, birthdate FROM account_info WHERE account_id = ($1) LIMIT 1";
         await using var command = _dataSource.CreateCommand(sql);
 
-        command.Parameters.AddPositional(long.Parse(id), NpgsqlDbType.Bigint);
+        if (!long.TryParse(id, out var userId))
+        {
+            return null;
+        }
+
+        command.Parameters.AddPositional(userId, NpgsqlDbType.Bigint);
 
         await using var reader = await command.ExecuteReaderAsync();
 
