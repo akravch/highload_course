@@ -20,3 +20,6 @@ services:
     volumes:
       - ~/postgresql:/var/lib/postgresql
       - ./../Scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./../Scripts/initialize_data.sh:/usr/scripts/initialize_data.sh
+      - ./../Scripts/initialize_data.sql:/usr/scripts/initialize_data.sql
+      - ./../Scripts/data.csv:/usr/scripts/data.csv
