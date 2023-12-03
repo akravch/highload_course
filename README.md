@@ -10,7 +10,7 @@ export DB_USER=postgres DB_PASSWORD=password AUTH_KEY=1234567890 && \
 docker compose -f docker-compose.yml up
 ```
 
-The service should start on `http://localhost:5000`.
+The service should start on `http://localhost:5001`.
 
 ## Step by step
 
@@ -36,4 +36,4 @@ The service should start on `http://localhost:5000`.
    ```
 
 2. Run `docker compose -f docker-compose.yml up` in `Src`.
-3. The API should now be available on `http://localhost:5000`.
+3. The API should now be available on `http://localhost:5001`.

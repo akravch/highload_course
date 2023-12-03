@@ -6,7 +6,7 @@ services:
       - ConnectionString=Server=highload_course_db;User Id=${DB_USER};Password=${DB_PASSWORD};Database=highload_course
       - AuthenticationKey=${AUTH_KEY}
     ports:
-      - "5000:80"
+      - "5001:8080"
   db:
     image: postgres
     container_name: highload_course_db
