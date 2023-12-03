@@ -73,4 +73,32 @@ public sealed class UserController : ControllerBase
             })
             : NotFound();
     }
+
+    [HttpGet("/user/search")]
+    [ProducesResponseType(typeof(UserGetResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<UserGetResponse[]>> SearchAsync([FromQuery] string firstName, [FromQuery] string lastName)
+    {
+        var users = await _userService.SearchAsync(firstName, lastName);
+        var usersCount = users.Count;
+        var responses = new UserGetResponse[usersCount];
+
+        for (var i = 0; i < usersCount; i++)
+        {
+            var user = users[i];
+            responses[i] = new UserGetResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                SecondName = user.SecondName,
+                Biography = user.Biography,
+                City = user.City,
+                Birthdate = user.Birthdate
+            };
+        }
+
+        return Ok(responses);
+    }
 }
