@@ -79,7 +79,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<UserGetResponse[]>> SearchAsync([FromQuery] string firstName, [FromQuery] string lastName)
+    public async Task<ActionResult<UserGetResponse[]>> SearchAsync([FromQuery(Name = "first_name")] string firstName, [FromQuery(Name = "last_name")] string lastName)
     {
         var users = await _userService.SearchAsync(firstName, lastName);
         var usersCount = users.Count;
