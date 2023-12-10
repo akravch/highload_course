@@ -1,6 +1,7 @@
 using System.Text.Json;
 using HighloadCourse.ErrorHandling;
 using HighloadCourse.Services;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,12 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
+builder.Services.AddSingleton(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration["ConnectionString"]!;
+    return NpgsqlDataSource.Create(connectionString);
+});
 builder.Services.AddScoped<UserService>();
 builder.Services.AddTransient<GlobalModelValidationFilter>();
 

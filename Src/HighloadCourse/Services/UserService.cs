@@ -12,20 +12,15 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace HighloadCourse.Services;
 
-public sealed class UserService : IDisposable
+public sealed class UserService
 {
     private readonly NpgsqlDataSource _dataSource;
     private readonly byte[] _authenticationKey;
 
-    public UserService(IConfiguration configuration)
+    public UserService(NpgsqlDataSource dataSource, IConfiguration configuration)
     {
-        _dataSource = NpgsqlDataSource.Create(configuration["ConnectionString"]!);
+        _dataSource = dataSource;
         _authenticationKey = Encoding.UTF8.GetBytes(configuration["AuthenticationKey"]!);
-    }
-
-    public void Dispose()
-    {
-        _dataSource.Dispose();
     }
 
     // success
