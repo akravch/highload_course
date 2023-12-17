@@ -30,7 +30,8 @@ public sealed class UserService
     {
         const string sql = "SELECT hash, salt FROM account WHERE id = $1";
 
-        await using var command = _dataSource.CreateCommand(sql);
+        await using var connection = await _dataSource.OpenConnectionAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
 
         if (!long.TryParse(request.Id, out var userId))
         {
@@ -82,7 +83,8 @@ public sealed class UserService
             RETURNING (SELECT id FROM account_insert)
             """;
 
-        await using var command = _dataSource.CreateCommand(sql);
+        await using var connection = await _dataSource.OpenConnectionAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
 
         var salt = RandomNumberGenerator.GetBytes(32);
         var hash = KeyDerivation.Pbkdf2(request.Password, salt, KeyDerivationPrf.HMACSHA256, 100_000, 64);
@@ -104,7 +106,9 @@ public sealed class UserService
     public async Task<UserGetResult?> GetAsync(string id)
     {
         const string sql = "SELECT first_name, second_name, biography, city, birthdate FROM account_info WHERE account_id = ($1) LIMIT 1";
-        await using var command = _dataSource.CreateCommand(sql);
+
+        await using var connection = await _dataSource.OpenConnectionAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
 
         if (!long.TryParse(id, out var userId))
         {
@@ -139,7 +143,9 @@ public sealed class UserService
               AND second_name LIKE CONCAT($2, '%')
             ORDER BY id
             """;
-        await using var command = _dataSource.CreateCommand(sql);
+
+        await using var connection = await _dataSource.OpenConnectionAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
 
         command.Parameters.AddPositional(firstName, NpgsqlDbType.Varchar);
         command.Parameters.AddPositional(secondName, NpgsqlDbType.Varchar);
