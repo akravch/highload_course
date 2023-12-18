@@ -17,7 +17,7 @@ public sealed class UserService
     private readonly NpgsqlDataSource _dataSource;
     private readonly byte[] _authenticationKey;
 
-    public UserService(NpgsqlDataSource dataSource, IConfiguration configuration)
+    public UserService([FromKeyedServices("ReadWrite")] NpgsqlDataSource dataSource, IConfiguration configuration)
     {
         _dataSource = dataSource;
         _authenticationKey = Encoding.UTF8.GetBytes(configuration["AuthenticationKey"]!);

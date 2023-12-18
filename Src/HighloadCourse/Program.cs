@@ -22,12 +22,18 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-builder.Services.AddSingleton(provider =>
-{
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration["ConnectionString"]!;
-    return NpgsqlDataSource.Create(connectionString);
-});
+builder.Configuration.GetSection("ConnectionStrings");
+builder.Configuration.GetConnectionString("ReadWrite");
+
+var readWriteConnectionString = builder.Configuration.GetConnectionString("ReadWrite")!;
+var readWriteDataSource = NpgsqlDataSource.Create(readWriteConnectionString);
+
+var readOnlyConnectionString = builder.Configuration.GetConnectionString("ReadOnly")!;
+var readOnlyDataSource = NpgsqlDataSource.Create(readOnlyConnectionString);
+
+builder.Services.AddKeyedSingleton("ReadWrite", readWriteDataSource);
+builder.Services.AddKeyedSingleton("ReadOnly", readOnlyDataSource);
+
 builder.Services.AddScoped<UserService>();
 builder.Services.AddTransient<GlobalModelValidationFilter>();
 
