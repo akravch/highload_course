@@ -3,7 +3,8 @@ services:
     build: ./HighloadCourse
     container_name: highload_course_api
     environment:
-      - ConnectionString=Server=highload_course_db;User Id=${DB_USER};Password=${DB_PASSWORD};Database=highload_course
+      - ConnectionStrings__ReadWrite=Server=highload_course_db_1;User Id=${DB_USER};Password=${DB_PASSWORD};Database=highload_course
+      - ConnectionStrings__ReadOnly=Server=highload_course_db_2;User Id=${DB_USER};Password=${DB_PASSWORD};Database=highload_course
       - AuthenticationKey=${AUTH_KEY}
     ports:
       - "5001:8080"
