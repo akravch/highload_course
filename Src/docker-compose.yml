@@ -7,19 +7,43 @@ services:
       - AuthenticationKey=${AUTH_KEY}
     ports:
       - "5001:8080"
-  db:
+    networks:
+      - db_network
+  db_1:
     image: postgres
-    container_name: highload_course_db
-    hostname: highload_course_db
+    container_name: highload_course_db_1
+    hostname: highload_course_db_1
     environment:
       - POSTGRES_DB=highload_course
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
-      - ~/postgresql:/var/lib/postgresql
+      - ~/postgresql/highload_course_db_1:/var/lib/postgresql/data
       - ./../Scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
       - ./../Scripts/initialize_data.sh:/usr/scripts/initialize_data.sh
       - ./../Scripts/initialize_data.sql:/usr/scripts/initialize_data.sql
       - ./../Scripts/data.csv:/usr/scripts/data.csv
+    networks:
+      - db_network
+  db_2:
+    image: postgres
+    container_name: highload_course_db_2
+    hostname: highload_course_db_2
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "25432:5432"
+    volumes:
+      - ~/postgresql/highload_course_db_2:/var/lib/postgresql/data
+    networks:
+      - db_network
+    depends_on:
+      - db_1
+
+networks:
+  db_network:
+    name: db_network
+    driver: bridge
