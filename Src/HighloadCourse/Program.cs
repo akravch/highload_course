@@ -35,6 +35,7 @@ builder.Services.AddKeyedSingleton("ReadWrite", readWriteDataSource);
 builder.Services.AddKeyedSingleton("ReadOnly", readOnlyDataSource);
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<UserServiceReadOnly>();
 builder.Services.AddTransient<GlobalModelValidationFilter>();
 
 var app = builder.Build();

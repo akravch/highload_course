@@ -9,10 +9,12 @@ namespace HighloadCourse.Controllers;
 public sealed class UserController : ControllerBase
 {
     private readonly UserService _userService;
+    private readonly UserServiceReadOnly _userServiceReadOnly;
 
-    public UserController(UserService userService)
+    public UserController(UserService userService, UserServiceReadOnly userServiceReadOnly)
     {
         _userService = userService;
+        _userServiceReadOnly = userServiceReadOnly;
     }
 
     [HttpPost("/login")]
@@ -59,7 +61,7 @@ public sealed class UserController : ControllerBase
     [ServiceFilter<GlobalModelValidationFilter>]
     public async Task<ActionResult<UserGetResponse>> GetAsync([FromRoute] string id)
     {
-        var result = await _userService.GetAsync(id);
+        var result = await _userServiceReadOnly.GetAsync(id);
 
         return result != null
             ? Ok(new UserGetResponse
@@ -81,7 +83,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<UserGetResponse[]>> SearchAsync([FromQuery(Name = "first_name")] string firstName, [FromQuery(Name = "last_name")] string lastName)
     {
-        var users = await _userService.SearchAsync(firstName, lastName);
+        var users = await _userServiceReadOnly.SearchAsync(firstName, lastName);
         var usersCount = users.Count;
         var responses = new UserGetResponse[usersCount];
 
