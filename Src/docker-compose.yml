@@ -43,6 +43,21 @@ services:
       - db_network
     depends_on:
       - db_1
+  db_3:
+    image: postgres
+    container_name: highload_course_db_3
+    hostname: highload_course_db_3
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "35432:5432"
+    volumes:
+      - ~/postgresql/highload_course_db_3:/var/lib/postgresql/data
+    networks:
+      - db_network
+    depends_on:
+      - db_1
 
 networks:
   db_network:
